@@ -1,0 +1,1094 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AutoStock — Gestão de Veículos</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #13131a;
+    --surface2: #1c1c27;
+    --border: #2a2a3d;
+    --accent: #e8ff47;
+    --accent2: #ff6b35;
+    --text: #f0f0f5;
+    --muted: #6b6b88;
+    --green: #4ade80;
+    --red: #f87171;
+    --yellow: #fbbf24;
+    --blue: #60a5fa;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* ===== SIDEBAR ===== */
+  .layout { display: flex; min-height: 100vh; }
+
+  .sidebar {
+    width: 240px;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    padding: 24px 0;
+    position: fixed;
+    height: 100vh;
+    z-index: 100;
+  }
+
+  .logo {
+    padding: 0 24px 28px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .logo-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    letter-spacing: 2px;
+    color: var(--accent);
+    line-height: 1;
+  }
+
+  .logo-sub {
+    font-size: 10px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    margin-top: 4px;
+  }
+
+  .nav { padding: 20px 12px; flex: 1; }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--muted);
+    transition: all 0.15s;
+    margin-bottom: 2px;
+  }
+
+  .nav-item:hover { background: var(--surface2); color: var(--text); }
+
+  .nav-item.active {
+    background: var(--accent);
+    color: #000;
+  }
+
+  .nav-icon { font-size: 18px; width: 24px; text-align: center; }
+
+  /* ===== MAIN ===== */
+  .main {
+    margin-left: 240px;
+    flex: 1;
+    padding: 32px;
+    min-height: 100vh;
+  }
+
+  /* ===== TOPBAR ===== */
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 32px;
+  }
+
+  .page-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 36px;
+    letter-spacing: 2px;
+    color: var(--text);
+  }
+
+  .btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .btn-primary { background: var(--accent); color: #000; }
+  .btn-primary:hover { background: #d4eb3e; transform: translateY(-1px); }
+
+  .btn-danger { background: var(--red); color: #fff; }
+  .btn-danger:hover { opacity: 0.85; }
+
+  .btn-ghost {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text);
+  }
+  .btn-ghost:hover { background: var(--surface2); }
+
+  .btn-sm { padding: 6px 12px; font-size: 12px; }
+
+  /* ===== STATS CARDS ===== */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+  }
+
+  .stat-card.green::before { background: var(--green); }
+  .stat-card.red::before   { background: var(--red); }
+  .stat-card.yellow::before { background: var(--yellow); }
+  .stat-card.blue::before  { background: var(--blue); }
+
+  .stat-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+  .stat-value { font-family: 'Bebas Neue', sans-serif; font-size: 40px; line-height: 1.1; margin-top: 4px; }
+  .stat-card.green .stat-value  { color: var(--green); }
+  .stat-card.red .stat-value    { color: var(--red); }
+  .stat-card.yellow .stat-value { color: var(--yellow); }
+  .stat-card.blue .stat-value   { color: var(--blue); }
+
+  /* ===== FILTER BAR ===== */
+  .filter-bar {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 20px;
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    margin-bottom: 20px;
+  }
+
+  .filter-group { display: flex; flex-direction: column; gap: 4px; }
+  .filter-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+
+  .filter-bar select,
+  .filter-bar input {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    padding: 8px 12px;
+    outline: none;
+    min-width: 120px;
+    transition: border 0.15s;
+  }
+
+  .filter-bar select:focus,
+  .filter-bar input:focus { border-color: var(--accent); }
+
+  /* ===== TABLE ===== */
+  .table-wrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .table-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .table-title { font-size: 14px; font-weight: 600; }
+  .table-count { font-size: 12px; color: var(--muted); }
+
+  table { width: 100%; border-collapse: collapse; }
+  th {
+    text-align: left;
+    padding: 12px 16px;
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface2);
+  }
+
+  td {
+    padding: 14px 16px;
+    font-size: 13px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+  }
+
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(255,255,255,0.02); }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .badge-disponivel  { background: rgba(74,222,128,0.15); color: var(--green); }
+  .badge-vendido     { background: rgba(248,113,113,0.15); color: var(--red); }
+  .badge-reservado   { background: rgba(251,191,36,0.15);  color: var(--yellow); }
+  .badge-manutencao  { background: rgba(96,165,250,0.15);  color: var(--blue); }
+
+  .price { font-weight: 600; font-size: 14px; }
+
+  .actions { display: flex; gap: 8px; }
+
+  /* ===== MODAL ===== */
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+  }
+
+  .modal-overlay.open { opacity: 1; pointer-events: all; }
+
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    width: 560px;
+    max-height: 90vh;
+    overflow-y: auto;
+    transform: translateY(20px);
+    transition: transform 0.2s;
+  }
+
+  .modal-overlay.open .modal { transform: translateY(0); }
+
+  .modal-head {
+    padding: 24px 28px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .modal-title { font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: 1px; }
+
+  .modal-close {
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-size: 20px;
+    cursor: pointer;
+    padding: 4px;
+    transition: color 0.15s;
+  }
+  .modal-close:hover { color: var(--text); }
+
+  .modal-body { padding: 24px 28px; }
+  .modal-footer {
+    padding: 16px 28px 24px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+  }
+
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .form-grid .full { grid-column: 1/-1; }
+
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  .form-label { font-size: 12px; color: var(--muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; }
+
+  .form-control {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    padding: 10px 14px;
+    outline: none;
+    width: 100%;
+    transition: border 0.15s;
+  }
+  .form-control:focus { border-color: var(--accent); }
+
+  /* ===== TABS ===== */
+  .tabs { display: flex; gap: 4px; margin-bottom: 24px; }
+  .tab {
+    padding: 8px 18px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    color: var(--muted);
+    border: 1px solid transparent;
+    transition: all 0.15s;
+  }
+  .tab:hover { color: var(--text); }
+  .tab.active { border-color: var(--border); background: var(--surface); color: var(--text); }
+
+  /* ===== SECTIONS ===== */
+  .section { display: none; }
+  .section.active { display: block; }
+
+  /* ===== TOAST ===== */
+  .toast {
+    position: fixed;
+    bottom: 24px; right: 24px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 20px;
+    font-size: 14px;
+    z-index: 999;
+    transform: translateY(80px);
+    opacity: 0;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast.success { border-color: var(--green); }
+  .toast.error   { border-color: var(--red); }
+
+  .empty-state {
+    text-align: center;
+    padding: 48px;
+    color: var(--muted);
+  }
+
+  .empty-icon { font-size: 40px; margin-bottom: 12px; }
+  .empty-text { font-size: 15px; }
+</style>
+</head>
+<body>
+
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="logo">
+      <div class="logo-title">AutoStock</div>
+      <div class="logo-sub">Gestão de Veículos</div>
+    </div>
+    <nav class="nav">
+      <div class="nav-item active" onclick="showSection('veiculos')">
+        <span class="nav-icon">🚗</span> Veículos
+      </div>
+      <div class="nav-item" onclick="showSection('marcas')">
+        <span class="nav-icon">🏷️</span> Marcas
+      </div>
+      <div class="nav-item" onclick="showSection('modelos')">
+        <span class="nav-icon">📋</span> Modelos
+      </div>
+    </nav>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <!-- ===== SEÇÃO VEÍCULOS ===== -->
+    <section class="section active" id="section-veiculos">
+      <div class="topbar">
+        <h1 class="page-title">Estoque de Veículos</h1>
+        <button class="btn btn-primary" onclick="openModal('veiculo')">＋ Novo Veículo</button>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-grid">
+        <div class="stat-card green">
+          <div class="stat-label">Disponíveis</div>
+          <div class="stat-value" id="count-disponivel">—</div>
+        </div>
+        <div class="stat-card red">
+          <div class="stat-label">Vendidos</div>
+          <div class="stat-value" id="count-vendido">—</div>
+        </div>
+        <div class="stat-card yellow">
+          <div class="stat-label">Reservados</div>
+          <div class="stat-value" id="count-reservado">—</div>
+        </div>
+        <div class="stat-card blue">
+          <div class="stat-label">Em Manutenção</div>
+          <div class="stat-value" id="count-manutencao">—</div>
+        </div>
+      </div>
+
+      <!-- Filtros -->
+      <div class="filter-bar">
+        <div class="filter-group">
+          <span class="filter-label">Marca</span>
+          <select id="f-marca" onchange="filtrarPorMarca()">
+            <option value="">Todas</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <span class="filter-label">Modelo</span>
+          <select id="f-modelo">
+            <option value="">Todos</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <span class="filter-label">Status</span>
+          <select id="f-status">
+            <option value="">Todos</option>
+            <option value="DISPONIVEL">Disponível</option>
+            <option value="VENDIDO">Vendido</option>
+            <option value="RESERVADO">Reservado</option>
+            <option value="MANUTENCAO">Manutenção</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <span class="filter-label">Ano Mín.</span>
+          <input type="number" id="f-ano-min" placeholder="2000" style="width:90px">
+        </div>
+        <div class="filter-group">
+          <span class="filter-label">Ano Máx.</span>
+          <input type="number" id="f-ano-max" placeholder="2025" style="width:90px">
+        </div>
+        <div class="filter-group">
+          <span class="filter-label">Preço Mín.</span>
+          <input type="number" id="f-preco-min" placeholder="0" style="width:100px">
+        </div>
+        <div class="filter-group">
+          <span class="filter-label">Preço Máx.</span>
+          <input type="number" id="f-preco-max" placeholder="999999" style="width:100px">
+        </div>
+        <button class="btn btn-primary" onclick="aplicarFiltros()">Filtrar</button>
+        <button class="btn btn-ghost" onclick="limparFiltros()">Limpar</button>
+      </div>
+
+      <!-- Tabela -->
+      <div class="table-wrap">
+        <div class="table-header">
+          <span class="table-title">Lista de Veículos</span>
+          <span class="table-count" id="veiculo-count">0 veículos</span>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Veículo</th>
+              <th>Ano</th>
+              <th>Cor</th>
+              <th>KM</th>
+              <th>Preço</th>
+              <th>Status</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="tabela-veiculos">
+            <tr><td colspan="8"><div class="empty-state"><div class="empty-icon">🔄</div><div class="empty-text">Carregando...</div></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ===== SEÇÃO MARCAS ===== -->
+    <section class="section" id="section-marcas">
+      <div class="topbar">
+        <h1 class="page-title">Marcas</h1>
+        <button class="btn btn-primary" onclick="openModal('marca')">＋ Nova Marca</button>
+      </div>
+      <div class="table-wrap">
+        <div class="table-header">
+          <span class="table-title">Marcas Cadastradas</span>
+          <span class="table-count" id="marca-count">0 marcas</span>
+        </div>
+        <table>
+          <thead>
+            <tr><th>ID</th><th>Nome</th><th>País de Origem</th><th>Ações</th></tr>
+          </thead>
+          <tbody id="tabela-marcas"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ===== SEÇÃO MODELOS ===== -->
+    <section class="section" id="section-modelos">
+      <div class="topbar">
+        <h1 class="page-title">Modelos</h1>
+        <button class="btn btn-primary" onclick="openModal('modelo')">＋ Novo Modelo</button>
+      </div>
+      <div class="table-wrap">
+        <div class="table-header">
+          <span class="table-title">Modelos Cadastrados</span>
+          <span class="table-count" id="modelo-count">0 modelos</span>
+        </div>
+        <table>
+          <thead>
+            <tr><th>ID</th><th>Marca</th><th>Modelo</th><th>Categoria</th><th>Ações</th></tr>
+          </thead>
+          <tbody id="tabela-modelos"></tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- ===== MODAL VEÍCULO ===== -->
+<div class="modal-overlay" id="modal-veiculo">
+  <div class="modal">
+    <div class="modal-head">
+      <h2 class="modal-title" id="modal-veiculo-title">Novo Veículo</h2>
+      <button class="modal-close" onclick="closeModal('veiculo')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group full">
+          <label class="form-label">Modelo *</label>
+          <select class="form-control" id="v-modelo-id"></select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Ano de Fabricação *</label>
+          <input class="form-control" type="number" id="v-ano" placeholder="2023" min="1900" max="2100">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Cor *</label>
+          <input class="form-control" type="text" id="v-cor" placeholder="Branco">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Preço (R$) *</label>
+          <input class="form-control" type="number" id="v-preco" placeholder="85000.00" step="0.01">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Quilometragem</label>
+          <input class="form-control" type="number" id="v-km" placeholder="0">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Status *</label>
+          <select class="form-control" id="v-status">
+            <option value="DISPONIVEL">Disponível</option>
+            <option value="RESERVADO">Reservado</option>
+            <option value="VENDIDO">Vendido</option>
+            <option value="MANUTENCAO">Manutenção</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Placa</label>
+          <input class="form-control" type="text" id="v-placa" placeholder="ABC1D23">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Chassi</label>
+          <input class="form-control" type="text" id="v-chassi" placeholder="VIN...">
+        </div>
+        <div class="form-group full">
+          <label class="form-label">Observações</label>
+          <textarea class="form-control" id="v-obs" rows="3" placeholder="Informações adicionais..."></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('veiculo')">Cancelar</button>
+      <button class="btn btn-primary" onclick="salvarVeiculo()">Salvar Veículo</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL MARCA ===== -->
+<div class="modal-overlay" id="modal-marca">
+  <div class="modal" style="width:420px">
+    <div class="modal-head">
+      <h2 class="modal-title" id="modal-marca-title">Nova Marca</h2>
+      <button class="modal-close" onclick="closeModal('marca')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group" style="margin-bottom:16px">
+        <label class="form-label">Nome da Marca *</label>
+        <input class="form-control" type="text" id="m-nome" placeholder="Toyota">
+      </div>
+      <div class="form-group">
+        <label class="form-label">País de Origem</label>
+        <input class="form-control" type="text" id="m-pais" placeholder="Japão">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('marca')">Cancelar</button>
+      <button class="btn btn-primary" onclick="salvarMarca()">Salvar Marca</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL MODELO ===== -->
+<div class="modal-overlay" id="modal-modelo">
+  <div class="modal" style="width:420px">
+    <div class="modal-head">
+      <h2 class="modal-title" id="modal-modelo-title">Novo Modelo</h2>
+      <button class="modal-close" onclick="closeModal('modelo')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group" style="margin-bottom:16px">
+        <label class="form-label">Marca *</label>
+        <select class="form-control" id="mod-marca-id"></select>
+      </div>
+      <div class="form-group" style="margin-bottom:16px">
+        <label class="form-label">Nome do Modelo *</label>
+        <input class="form-control" type="text" id="mod-nome" placeholder="Corolla">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Categoria</label>
+        <select class="form-control" id="mod-categoria">
+          <option value="">Selecione...</option>
+          <option value="Sedan">Sedan</option>
+          <option value="Hatch">Hatch</option>
+          <option value="SUV">SUV</option>
+          <option value="Pickup">Pickup</option>
+          <option value="Coupe">Coupê</option>
+          <option value="Conversivel">Conversível</option>
+          <option value="Minivan">Minivan</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modelo')">Cancelar</button>
+      <button class="btn btn-primary" onclick="salvarModelo()">Salvar Modelo</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+const API = '/api';
+
+let marcas = [], modelos = [], veiculos = [];
+let editId = { veiculo: null, marca: null, modelo: null };
+
+// ===== INIT =====
+document.addEventListener('DOMContentLoaded', () => {
+  loadAll();
+});
+
+async function loadAll() {
+  await Promise.all([loadMarcas(), loadModelos(), loadVeiculos()]);
+  updateStats();
+}
+
+// ===== NAVEGAÇÃO =====
+function showSection(name) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('section-' + name).classList.add('active');
+  event.currentTarget.classList.add('active');
+}
+
+// ===== STATS =====
+function updateStats() {
+  const counts = { DISPONIVEL: 0, VENDIDO: 0, RESERVADO: 0, MANUTENCAO: 0 };
+  veiculos.forEach(v => counts[v.status] = (counts[v.status] || 0) + 1);
+  document.getElementById('count-disponivel').textContent = counts.DISPONIVEL;
+  document.getElementById('count-vendido').textContent = counts.VENDIDO;
+  document.getElementById('count-reservado').textContent = counts.RESERVADO;
+  document.getElementById('count-manutencao').textContent = counts.MANUTENCAO;
+}
+
+// ===== LOAD DATA =====
+async function loadVeiculos() {
+  try {
+    const r = await fetch(`${API}/veiculos`);
+    veiculos = await r.json();
+    renderVeiculos(veiculos);
+  } catch { renderVeiculosOffline(); }
+}
+
+async function loadMarcas() {
+  try {
+    const r = await fetch(`${API}/marcas`);
+    marcas = await r.json();
+    renderMarcas(marcas);
+    populateMarcaSelects();
+  } catch { renderMarcasOffline(); }
+}
+
+async function loadModelos() {
+  try {
+    const r = await fetch(`${API}/modelos`);
+    modelos = await r.json();
+    renderModelos(modelos);
+    populateModeloSelect();
+  } catch { renderModelosOffline(); }
+}
+
+// ===== RENDER VEÍCULOS =====
+function renderVeiculos(list) {
+  const tb = document.getElementById('tabela-veiculos');
+  document.getElementById('veiculo-count').textContent = `${list.length} veículo(s)`;
+  if (!list.length) {
+    tb.innerHTML = `<tr><td colspan="8"><div class="empty-state"><div class="empty-icon">🚗</div><div class="empty-text">Nenhum veículo encontrado</div></div></td></tr>`;
+    return;
+  }
+  tb.innerHTML = list.map(v => {
+    const marca = v.modelo?.marca?.nome || '—';
+    const modelo = v.modelo?.nome || '—';
+    const preco = Number(v.preco).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    const km = Number(v.quilometragem).toLocaleString('pt-BR');
+    return `
+    <tr>
+      <td><span style="color:var(--muted);font-size:12px">#${v.id}</span></td>
+      <td><strong>${marca}</strong> ${modelo}</td>
+      <td>${v.anoFabricacao}</td>
+      <td>${v.cor}</td>
+      <td>${km} km</td>
+      <td class="price">${preco}</td>
+      <td><span class="badge badge-${v.status.toLowerCase()}">${v.status}</span></td>
+      <td>
+        <div class="actions">
+          <button class="btn btn-ghost btn-sm" onclick="editarVeiculo(${v.id})">✏️</button>
+          <button class="btn btn-danger btn-sm" onclick="excluirVeiculo(${v.id})">🗑️</button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function renderVeiculosOffline() {
+  const demo = [
+    { id:1, modelo:{nome:'Corolla', marca:{nome:'Toyota'}}, anoFabricacao:2023, cor:'Prata', quilometragem:0, preco:135000, status:'DISPONIVEL' },
+    { id:2, modelo:{nome:'Civic', marca:{nome:'Honda'}}, anoFabricacao:2023, cor:'Preto', quilometragem:0, preco:145000, status:'DISPONIVEL' },
+    { id:3, modelo:{nome:'Onix', marca:{nome:'Chevrolet'}}, anoFabricacao:2022, cor:'Branco', quilometragem:15000, preco:85000, status:'VENDIDO' },
+  ];
+  veiculos = demo;
+  renderVeiculos(demo);
+  updateStats();
+  showToast('⚠️ Modo demo — backend não conectado', 'error');
+}
+
+// ===== RENDER MARCAS =====
+function renderMarcas(list) {
+  const tb = document.getElementById('tabela-marcas');
+  document.getElementById('marca-count').textContent = `${list.length} marca(s)`;
+  tb.innerHTML = list.map(m => `
+    <tr>
+      <td><span style="color:var(--muted);font-size:12px">#${m.id}</span></td>
+      <td><strong>${m.nome}</strong></td>
+      <td>${m.paisOrigem || '—'}</td>
+      <td>
+        <div class="actions">
+          <button class="btn btn-ghost btn-sm" onclick="editarMarca(${m.id})">✏️</button>
+          <button class="btn btn-danger btn-sm" onclick="excluirMarca(${m.id})">🗑️</button>
+        </div>
+      </td>
+    </tr>`).join('');
+}
+
+function renderMarcasOffline() {
+  marcas = [
+    {id:1,nome:'Toyota',paisOrigem:'Japão'},
+    {id:2,nome:'Honda',paisOrigem:'Japão'},
+    {id:3,nome:'Chevrolet',paisOrigem:'Estados Unidos'},
+  ];
+  renderMarcas(marcas);
+  populateMarcaSelects();
+}
+
+// ===== RENDER MODELOS =====
+function renderModelos(list) {
+  const tb = document.getElementById('tabela-modelos');
+  document.getElementById('modelo-count').textContent = `${list.length} modelo(s)`;
+  tb.innerHTML = list.map(m => `
+    <tr>
+      <td><span style="color:var(--muted);font-size:12px">#${m.id}</span></td>
+      <td>${m.marca?.nome || '—'}</td>
+      <td><strong>${m.nome}</strong></td>
+      <td>${m.categoria || '—'}</td>
+      <td>
+        <div class="actions">
+          <button class="btn btn-ghost btn-sm" onclick="editarModelo(${m.id})">✏️</button>
+          <button class="btn btn-danger btn-sm" onclick="excluirModelo(${m.id})">🗑️</button>
+        </div>
+      </td>
+    </tr>`).join('');
+}
+
+function renderModelosOffline() {
+  modelos = [
+    {id:1,nome:'Corolla',categoria:'Sedan',marca:{id:1,nome:'Toyota'}},
+    {id:2,nome:'Civic',categoria:'Sedan',marca:{id:2,nome:'Honda'}},
+    {id:3,nome:'Onix',categoria:'Hatch',marca:{id:3,nome:'Chevrolet'}},
+  ];
+  renderModelos(modelos);
+  populateModeloSelect();
+}
+
+// ===== SELECTS =====
+function populateMarcaSelects() {
+  const opts = marcas.map(m => `<option value="${m.id}">${m.nome}</option>`).join('');
+  document.getElementById('f-marca').innerHTML = '<option value="">Todas</option>' + opts;
+  document.getElementById('mod-marca-id').innerHTML = '<option value="">Selecione...</option>' + opts;
+}
+
+function populateModeloSelect() {
+  const opts = modelos.map(m => `<option value="${m.id}">${m.marca?.nome || ''} ${m.nome}</option>`).join('');
+  document.getElementById('v-modelo-id').innerHTML = '<option value="">Selecione...</option>' + opts;
+}
+
+function filtrarPorMarca() {
+  const marcaId = document.getElementById('f-marca').value;
+  const filtrados = marcaId
+    ? modelos.filter(m => String(m.marca?.id) === marcaId)
+    : modelos;
+  const opts = filtrados.map(m => `<option value="${m.id}">${m.nome}</option>`).join('');
+  document.getElementById('f-modelo').innerHTML = '<option value="">Todos</option>' + opts;
+}
+
+// ===== FILTROS =====
+async function aplicarFiltros() {
+  const params = new URLSearchParams();
+  const marcaId = document.getElementById('f-marca').value;
+  const modeloId = document.getElementById('f-modelo').value;
+  const status = document.getElementById('f-status').value;
+  const anoMin = document.getElementById('f-ano-min').value;
+  const anoMax = document.getElementById('f-ano-max').value;
+  const precoMin = document.getElementById('f-preco-min').value;
+  const precoMax = document.getElementById('f-preco-max').value;
+
+  if (marcaId)  params.append('marcaId', marcaId);
+  if (modeloId) params.append('modeloId', modeloId);
+  if (status)   params.append('status', status);
+  if (anoMin)   params.append('anoMin', anoMin);
+  if (anoMax)   params.append('anoMax', anoMax);
+  if (precoMin) params.append('precoMin', precoMin);
+  if (precoMax) params.append('precoMax', precoMax);
+
+  try {
+    const r = await fetch(`${API}/veiculos/filtrar?${params}`);
+    const data = await r.json();
+    renderVeiculos(data);
+  } catch {
+    // fallback offline
+    let filtrados = [...veiculos];
+    if (status) filtrados = filtrados.filter(v => v.status === status);
+    renderVeiculos(filtrados);
+  }
+}
+
+function limparFiltros() {
+  ['f-marca','f-modelo','f-status'].forEach(id => document.getElementById(id).value = '');
+  ['f-ano-min','f-ano-max','f-preco-min','f-preco-max'].forEach(id => document.getElementById(id).value = '');
+  renderVeiculos(veiculos);
+}
+
+// ===== MODAIS =====
+function openModal(type) {
+  editId[type] = null;
+  if (type === 'veiculo') {
+    document.getElementById('modal-veiculo-title').textContent = 'Novo Veículo';
+    ['v-modelo-id','v-ano','v-cor','v-preco','v-km','v-status','v-placa','v-chassi','v-obs']
+      .forEach(id => { const el = document.getElementById(id); if(el.tagName==='SELECT') el.selectedIndex=0; else el.value=''; });
+  } else if (type === 'marca') {
+    document.getElementById('modal-marca-title').textContent = 'Nova Marca';
+    document.getElementById('m-nome').value = '';
+    document.getElementById('m-pais').value = '';
+  } else {
+    document.getElementById('modal-modelo-title').textContent = 'Novo Modelo';
+    document.getElementById('mod-nome').value = '';
+    document.getElementById('mod-categoria').value = '';
+    document.getElementById('mod-marca-id').selectedIndex = 0;
+    populateMarcaSelects();
+  }
+  document.getElementById('modal-' + type).classList.add('open');
+}
+
+function closeModal(type) {
+  document.getElementById('modal-' + type).classList.remove('open');
+}
+
+// ===== CRUD VEÍCULOS =====
+async function salvarVeiculo() {
+  const modeloId = document.getElementById('v-modelo-id').value;
+  const ano = document.getElementById('v-ano').value;
+  const cor = document.getElementById('v-cor').value.trim();
+  const precoRaw = document.getElementById('v-preco').value;
+  const kmRaw = document.getElementById('v-km').value;
+
+  if (!modeloId || !ano || !cor || !precoRaw) { showToast('Preencha os campos obrigatórios', 'error'); return; }
+
+  const preco = parseFloat(precoRaw);
+  const quilometragem = parseInt(kmRaw || 0);
+
+  if (isNaN(preco) || preco <= 0) { showToast('Preço inválido', 'error'); return; }
+
+  const body = {
+    modelo: { id: parseInt(modeloId) },
+    anoFabricacao: parseInt(ano),
+    cor: cor,
+    preco: preco,
+    quilometragem: quilometragem,
+    status: document.getElementById('v-status').value,
+    placa: document.getElementById('v-placa').value.trim() || null,
+    chassi: document.getElementById('v-chassi').value.trim() || null,
+    observacoes: document.getElementById('v-obs').value.trim() || null,
+  };
+
+  try {
+    const url = editId.veiculo ? `${API}/veiculos/${editId.veiculo}` : `${API}/veiculos`;
+    const method = editId.veiculo ? 'PUT' : 'POST';
+    const r = await fetch(url, { method, headers: {'Content-Type':'application/json'}, body: JSON.stringify(body) });
+    if (!r.ok) {
+      const err = await r.json();
+      const msg = err.erro || JSON.stringify(err);
+      showToast('Erro: ' + msg, 'error');
+      return;
+    }
+    showToast(editId.veiculo ? '✅ Veículo atualizado!' : '✅ Veículo cadastrado!', 'success');
+    closeModal('veiculo');
+    await loadVeiculos();
+    updateStats();
+  } catch (e) { showToast('Erro ao salvar: ' + e.message, 'error'); }
+}
+
+function editarVeiculo(id) {
+  const v = veiculos.find(x => x.id === id);
+  if (!v) return;
+  editId.veiculo = id;
+  document.getElementById('modal-veiculo-title').textContent = 'Editar Veículo';
+  document.getElementById('v-modelo-id').value = v.modelo?.id;
+  document.getElementById('v-ano').value = v.anoFabricacao;
+  document.getElementById('v-cor').value = v.cor;
+  document.getElementById('v-preco').value = v.preco;
+  document.getElementById('v-km').value = v.quilometragem;
+  document.getElementById('v-status').value = v.status;
+  document.getElementById('v-placa').value = v.placa || '';
+  document.getElementById('v-chassi').value = v.chassi || '';
+  document.getElementById('v-obs').value = v.observacoes || '';
+  document.getElementById('modal-veiculo').classList.add('open');
+}
+
+async function excluirVeiculo(id) {
+  if (!confirm('Remover este veículo do estoque?')) return;
+  try {
+    await fetch(`${API}/veiculos/${id}`, { method: 'DELETE' });
+    showToast('🗑️ Veículo removido', 'success');
+    await loadVeiculos();
+    updateStats();
+  } catch { showToast('Erro ao remover', 'error'); }
+}
+
+// ===== CRUD MARCAS =====
+async function salvarMarca() {
+  const nome = document.getElementById('m-nome').value.trim();
+  if (!nome) { showToast('Informe o nome da marca', 'error'); return; }
+  const body = { nome, paisOrigem: document.getElementById('m-pais').value };
+  try {
+    const url = editId.marca ? `${API}/marcas/${editId.marca}` : `${API}/marcas`;
+    const method = editId.marca ? 'PUT' : 'POST';
+    const r = await fetch(url, { method, headers: {'Content-Type':'application/json'}, body: JSON.stringify(body) });
+    if (!r.ok) throw new Error();
+    showToast(editId.marca ? '✅ Marca atualizada!' : '✅ Marca cadastrada!', 'success');
+    closeModal('marca');
+    await loadMarcas();
+  } catch { showToast('Erro ao salvar marca', 'error'); }
+}
+
+function editarMarca(id) {
+  const m = marcas.find(x => x.id === id);
+  if (!m) return;
+  editId.marca = id;
+  document.getElementById('modal-marca-title').textContent = 'Editar Marca';
+  document.getElementById('m-nome').value = m.nome;
+  document.getElementById('m-pais').value = m.paisOrigem || '';
+  document.getElementById('modal-marca').classList.add('open');
+}
+
+async function excluirMarca(id) {
+  if (!confirm('Remover esta marca?')) return;
+  try {
+    await fetch(`${API}/marcas/${id}`, { method: 'DELETE' });
+    showToast('🗑️ Marca removida', 'success');
+    await loadMarcas();
+  } catch { showToast('Erro ao remover', 'error'); }
+}
+
+// ===== CRUD MODELOS =====
+async function salvarModelo() {
+  const marcaId = document.getElementById('mod-marca-id').value;
+  const nome = document.getElementById('mod-nome').value.trim();
+  if (!marcaId || !nome) { showToast('Preencha marca e nome do modelo', 'error'); return; }
+  const body = { nome, categoria: document.getElementById('mod-categoria').value, marca: { id: Number(marcaId) } };
+  try {
+    const url = editId.modelo ? `${API}/modelos/${editId.modelo}` : `${API}/modelos`;
+    const method = editId.modelo ? 'PUT' : 'POST';
+    const r = await fetch(url, { method, headers: {'Content-Type':'application/json'}, body: JSON.stringify(body) });
+    if (!r.ok) throw new Error();
+    showToast(editId.modelo ? '✅ Modelo atualizado!' : '✅ Modelo cadastrado!', 'success');
+    closeModal('modelo');
+    await loadModelos();
+  } catch { showToast('Erro ao salvar modelo', 'error'); }
+}
+
+function editarModelo(id) {
+  const m = modelos.find(x => x.id === id);
+  if (!m) return;
+  editId.modelo = id;
+  document.getElementById('modal-modelo-title').textContent = 'Editar Modelo';
+  populateMarcaSelects();
+  setTimeout(() => {
+    document.getElementById('mod-marca-id').value = m.marca?.id;
+    document.getElementById('mod-nome').value = m.nome;
+    document.getElementById('mod-categoria').value = m.categoria || '';
+  }, 50);
+  document.getElementById('modal-modelo').classList.add('open');
+}
+
+async function excluirModelo(id) {
+  if (!confirm('Remover este modelo?')) return;
+  try {
+    await fetch(`${API}/modelos/${id}`, { method: 'DELETE' });
+    showToast('🗑️ Modelo removido', 'success');
+    await loadModelos();
+  } catch { showToast('Erro ao remover', 'error'); }
+}
+
+// ===== TOAST =====
+function showToast(msg, type = 'success') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `toast ${type} show`;
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+</script>
+</body>
+</html>
